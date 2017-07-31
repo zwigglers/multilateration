@@ -1,0 +1,6 @@
+1. change stuff like 2dR to 2*d*R
+2. Make sure there nothing looks like functions (). If there is something before an open paranthesis make sure it's not a variable or a close parantheses
+
+3. THIS IS IMPORTANT -- fractional power indices need to be in parantheses
+
+4. MS mathematics uses arcCos , mathjs uses acos

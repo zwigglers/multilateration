@@ -1,0 +1,60 @@
+Mathematics for triangulating position.
+
+Inspired by https://math.stackexchange.com/a/1338429
+
+Given an unknown point (a,b) number of observations
+
+(x_1, y_1, d_1) ... (x_i, y_i, d_i) ... (x_n, y_n, d_n)
+
+where x_i and y_i are the coordinates and d_i is the estimated distance to (a,b).
+
+The error for each observation is given D_i - d_n, where D_i is the distance between (x_i,y_i) and the final estimation of (a,b)
+
+D_i = sqrt( (a-x_i)^2 + (b-y_i)^2 )
+
+The squared error function for each observation
+
+S_i(a,b)
+= ( D_i - d_i )^2
+= (a-x)^2 + (b-y)^2 - 2*d*sqrt( (a-x)^2 + (b-y)^2 ) + d^2
+### where x,y,d are of observation i
+
+The total squared error
+
+S = SUM( S_i ) for all i..n
+
+We calculate the partial derivatives for each observation
+
+dS_i/da = -2d(a-x)/sqrt((a-x)^2+(b-y)^2)+2a-2x 	### where x,y,d are of observations i
+to get dS_i/db, use the equation above and swap a <--> b and x_i <--> y_i
+
+The partial derivatives for the total squared function
+
+dS/da = SUM( dS_i/da ) for i..n
+dS/db = SUM( dS_i/db ) for i..n
+
+===
+
+Now we want to find the minima for the following set of equations by Newton Raphson method
+
+dS/da = f_1([a,b]) = 0
+dS/db = f_2([a,b]) = 0
+
+We pick a starting estimate (a_0, b_0), and we do the following iteration
+
+We define the Jacobian
+
+J_S([a,b]) = [ df_1/da  df_1/db
+               df_2/da  df_2/db  ]
+
+===
+
+a. df_1/da = d2S/da2 = SUM -2d(a-x)(x-a)/((a-x)^2+(b-y)^2)^3/2-2d/sqrt((a-x)^2+(b-y)^2)+2
+b. df_1/db = d2S/dbda = SUM -2d(a-x)(y-b)/((a-x)^2+(b-y)^2)^3/2
+c. d_f2/da = d2S/dadb = use (b) swapping a <--> b, x <--> y
+d. d_f2/db = d2S/db2 = use (a) swapping a <--> b, x <--> y
+
+===
+
+[ a_n+1    =   [ a_n    - J_S_inverse([ a_n       [ f_1([a,b])
+  b_n+1 ]        b_n ]                  b_n ])      f_2([a,b]) ]
