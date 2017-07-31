@@ -2,10 +2,12 @@
   "name": "multilateration",
   "version": "1.0.0",
   "description": "Estimates an unknown point or geo coordinate given a number of imprecisely distance measurements from known points.",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "index": "babel-node index.js",
-    "test": "babel-node test/test.js"
+    "build": "babel src --presets babel-preset-es2015 --out-dir dist",
+    "prepublish": "npm run build",
+    "index": "babel-node src/index.js",
+    "test": "babel-node src/test/test.js"
   },
   "keywords": [
     "multilateration",
