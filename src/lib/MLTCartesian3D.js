@@ -1,4 +1,6 @@
 import math from "mathjs";
+import _ from "lodash";
+
 import MLTCartesian2D from './MLTCartesian2D';
 
 class MLTCartesian3D extends MLTCartesian2D {
@@ -16,13 +18,48 @@ class MLTCartesian3D extends MLTCartesian2D {
 		this.z.push(point3d[2]);
 	}
 
-	// returns an estimation of the target point
-	estimate(initial, iterations=5, verbose=false) {
-		// TODO data checking?
+	initial() {
 
 		this.initExpr();
 
-		let estimate = initial;
+		if(this.observations < 3) {
+			throw new Error('Not enough observations');
+		}
+
+		let solutions = [];
+
+		for(let i=0;i<this.observations-2;i++) {
+
+			let A = [];
+			let b = [];
+
+			for(let j=i;j<i+3;j++) {
+				A.push([
+					2*( this.x[j] - this.x[j+1] ),
+					2*( this.y[j] - this.y[j+1] ),
+					2*( this.z[j] - this.z[j+1] )
+				]);
+				b.push(
+					(Math.pow(this.x[j],2)+Math.pow(this.y[j],2)+Math.pow(this.z[j],2)-Math.pow(this.d[j],2)) - (Math.pow(this.x[j+1],2)+Math.pow(this.y[j+1],2)+Math.pow(this.z[j+1],2)-Math.pow(this.d[j+1],2))
+				);
+			}
+
+			let tmp = math.lusolve(A,b);
+			let sol = [tmp[0][0], tmp[1][0], tmp[2][0]];
+
+			solutions.push(sol);
+		}
+
+		// pick the solution with least error
+		return _.minBy(solutions, (sol)=>this.S.apply(this,sol));
+	}
+
+	// returns an estimation of the target point
+	estimate(iterations=5, verbose=false) {
+
+		this.initExpr();
+
+		let estimate = this.initial();
 
 		for(let j=0;j<iterations;j++) {
 			let a = estimate[0];
@@ -55,8 +92,16 @@ class MLTCartesian3D extends MLTCartesian2D {
 
 		// Cartesian
 		// target point (a,b) sample point (x,y)
+		// We could calculate the derivatives on the fly, but it turns out to be a lot slower
+		// let S_i = math.parse("(sqrt((a-x)^2 + (b-y)^2 + (c-z)^2) - d)^2");
+		// let dS_i__da = math.derivative(S_i, 'a', {simplify: false});
+		// let d2S_i__da2 = math.derivative(dS_i__da,'a', {simplify: false});
+		// let d2S_i__dbda = math.derivative(dS_i__da,'b', {simplify: false});
+
+		// this.EXPR = _.each({ S_i, dS_i__da, d2S_i__da2, d2S_i__dbda },(v) => v.compile());
+
 		this.EXPR = {
-			S_i: math.compile("( sqrt( (a-x)^2 + (b-y)^2 + (c-z)^2 ) - d )^2"),
+			S_i: math.compile("(sqrt((a-x)^2 + (b-y)^2 + (c-z)^2) - d)^2"),
 			dS_i__da: math.compile("-2*d*(a-x)/sqrt(x^2-2*a*x+y^2-2*b*y+z^2-2*c*z+a^2+b^2+c^2)+2*a-2*x"),
 			d2S_i__da2: math.compile("-2*d*(a-x)*(x-a)/(x^2-2*a*x+y^2-2*b*y+z^2-2*c*z+a^2+b^2+c^2)^(3/2)-2*d/sqrt(x^2-2*a*x+y^2-2*b*y+z^2-2*c*z+a^2+b^2+c^2)+2"),
 			d2S_i__dbda: math.compile("-2*d*(a-x)*(y-b)/(x^2-2*a*x+y^2-2*b*y+z^2-2*c*z+a^2+b^2+c^2)^(3/2)")
@@ -76,7 +121,7 @@ class MLTCartesian3D extends MLTCartesian2D {
 
 	// squared error function
 	S_i(i,a,b,c) { return this.EXPR.S_i.eval({a: a, b: b, c: c, x: this.x[i], y: this.y[i], z: this.z[i], d: this.d[i]}); }
-	S(a,b,c) { return this.iSum(S_i,a,b,c); }
+	S(a,b,c) { return this.iSum(this.S_i,a,b,c); }
 
 	// first partial derivative
 	dS_i__da(i,a,b,c) { return this.EXPR.dS_i__da.eval({a: a, b: b, c: c, x: this.x[i], y: this.y[i], z: this.z[i], d: this.d[i] }); }

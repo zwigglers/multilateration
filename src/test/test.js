@@ -17,7 +17,7 @@ function testCartesian2D() {
 
 	for(let samples=0;samples<5;samples++) {
 		let point = [Math.random()*400, Math.random()*400];
-		let d = Math.round(scanner.dist(point, target_point)) + (Math.random()-0.5)*50;
+		let d = Math.round(scanner.dist(point, target_point)) + (Math.random()-0.5)*25;
 
 		data_points[samples] = {
 			x: point[0],
@@ -26,18 +26,15 @@ function testCartesian2D() {
 		};
 	}
 
-	let initialEstimate = [200,200];
-
 	//// start
 	console.log('2D Cartesian');
 	console.log('target-point', target_point);
-	console.log('first estimate %s, error %s', initialEstimate, scanner.dist(initialEstimate,target_point));
 
 	for(let i in data_points) {
 		scanner.observe([data_points[i].x, data_points[i].y], data_points[i].d);
 	}
 
-	let estimate = scanner.estimate(initialEstimate,5,true);
+	let estimate = scanner.estimate(5,true);
 
 	console.log('estimate %s, error %s', estimate, scanner.dist(estimate,target_point));
 
@@ -53,7 +50,7 @@ function testCartesian3D() {
 
 	let data_points = [];
 
-	for(let samples=0;samples<10;samples++) {
+	for(let samples=0;samples<5;samples++) {
 		let point = [Math.random()*400, Math.random()*400, Math.random()*400];
 		let d = Math.round(scanner.dist(point, target_point)) + (Math.random()-0.5)*50;
 
@@ -65,23 +62,20 @@ function testCartesian3D() {
 		};
 	}
 
-	let initialEstimate = [200,200,200];
-
 	//// start
 	console.log('3D Cartesian');
 	console.log('target-point', target_point);
-	console.log('first estimate %s, error %s', initialEstimate, scanner.dist(initialEstimate,target_point));
 
 	for(let i in data_points) {
 		scanner.observe([data_points[i].x, data_points[i].y, data_points[i].z], data_points[i].d);
 	}
 
-	let estimate = scanner.estimate(initialEstimate,5,true);
+	let estimate = scanner.estimate(5,true);
 
 	console.log('estimate %s, error %s', estimate, scanner.dist(estimate,target_point));
 }
 
-function testGeo2D(distMethod = 'equirectangular') {
+function testGeo2D(distMethod = 'eceftransform') {
 
 	////// LATLON
 	///
@@ -105,18 +99,15 @@ function testGeo2D(distMethod = 'equirectangular') {
 		};
 	}
 
-	let initialEstimate = [37.769223, -122.434544];
-
 	//// start
 	console.log('2D Geo, distance method = ', distMethod);
 	console.log('target-point', target_point);
-	console.log('first-estimate', initialEstimate, 'error', scanner.dist(initialEstimate,target_point));
 
 	for(let i in data_points) {
 		scanner.observe([data_points[i].lat, data_points[i].lon], data_points[i].d);
 	}
 
-	let estimate = scanner.estimate(initialEstimate,5,true);
+	let estimate = scanner.estimate(5,true);
 
 	console.log('estimate', estimate, 'error', scanner.dist(estimate,target_point));
 }
@@ -146,18 +137,15 @@ function testGeo3D(distMethod = 'eceftransform') {
 		};
 	}
 
-	let initialEstimate = [37.769223, -122.434544, 500];
-
 	//// start
 	console.log('3D Geo, distance method = ', distMethod);
 	console.log('target-point', target_point);
-	console.log('first-estimate', initialEstimate, 'error', scanner.dist(initialEstimate,target_point));
 
 	for(let i in data_points) {
 		scanner.observe([data_points[i].lat, data_points[i].lon, data_points[i].alt], data_points[i].d);
 	}
 
-	let estimate = scanner.estimate(initialEstimate,5,true);
+	let estimate = scanner.estimate(5,true);
 
 	console.log('estimate', estimate, 'error', scanner.dist(estimate,target_point));
 }

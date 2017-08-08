@@ -28,15 +28,14 @@ class MLTGeo3D extends MLTCartesian3D {
 
 	// adds an observation
 	observe(_lla, dist) {
-		// TODO data checking?
+		// TODO data checking
 		super.observe(ecef(_lla), dist);
 	}
 
 	// returns an estimation of the target point
-	estimate(initial, iterations=5, verbose=false) {
+	estimate(iterations=5, verbose=false) {
 		// TODO data checking?
-
-		return lla(super.estimate(ecef(initial), iterations, verbose));
+		return lla(super.estimate(iterations, verbose));
 	}
 
 	dist(_llaA, _llaB) {

@@ -1,0 +1,25 @@
+Initial Estimates
+
+https://math.stackexchange.com/a/1338429
+
+Get the equation for each circle in the form
+
+(x-x1)^2 + (y-y1)^2 + (z-z1)^2 = r1^2
+(x-x2)^2 + (y-y2)^2 + (z-z2)^2 = r2^2
+...
+
+Subtract equations from each other to eliminate the squared terms.
+
+This will result in a set of linear equations
+
+2(xj−xk)X+2(yj−yk)Y+2(zj−zk)Z=(x2j+y2j+z2j−d2j)−(x2k+y2k+z2k−d2k)
+
+Put this into a linear solver
+
+AX = b
+
+where b is the right side of the equation above, and A is a square matrix.
+
+We iterate over sets of observations (3 for 3d, 2 for 2d), obtaining a solution for each set of equations.
+
+We calculate the S(a,b,c) (total squared error) for each solution and pick the one with the lowest error as our initial estimate.

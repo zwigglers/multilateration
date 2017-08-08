@@ -1,4 +1,5 @@
 import math from "mathjs";
+import _ from 'lodash';
 
 class MLTCartesian2D {
 	constructor() {
@@ -18,13 +19,48 @@ class MLTCartesian2D {
 		this.observations++;
 	}
 
+	initial() {
+		this.initExpr();
+
+		if(this.observations < 2) {
+			throw new Error('Not enough observations');
+		}
+
+		let solutions = [];
+
+		for(let i=0;i<this.observations-1;i++) {
+
+			let A = [];
+			let b = [];
+
+			for(let j=i;j<i+2;j++) {
+				A.push([
+					2*( this.x[j] - this.x[j+1] ),
+					2*( this.y[j] - this.y[j+1] )
+				]);
+				b.push(
+					(Math.pow(this.x[j],2)+Math.pow(this.y[j],2)-Math.pow(this.d[j],2)) - (Math.pow(this.x[j+1],2)+Math.pow(this.y[j+1],2)-Math.pow(this.d[j+1],2))
+				);
+			}
+
+			let tmp = math.lusolve(A,b);
+			let sol = [tmp[0][0], tmp[1][0]];
+
+			solutions.push(sol);
+		}
+
+		// pick the solution with least error
+		return _.minBy(solutions, (sol)=>this.S.apply(this,sol));
+	}
+
 	// returns an estimation of the target point
-	estimate(initial, iterations=5, verbose=false) {
+	estimate(iterations=5, verbose=false) {
 		// TODO data checking?
+		// CANNOT USE ANY PREVIOUS POINTS AS AN INITIAL ESTIMATE
 
 		this.initExpr();
 
-		let estimate = initial;
+		let estimate = this.initial();
 
 		for(let j=0;j<iterations;j++) {
 			let a = estimate[0];
@@ -61,6 +97,7 @@ class MLTCartesian2D {
 
 		// Cartesian
 		// target point (a,b) sample point (x,y)
+		// We could calculate the derivatives on the fly, but it turns out to be a lot slower
 		this.EXPR = {
 			S_i: math.compile("(a-x)^2 + (b-y)^2 - 2*d*sqrt( (a-x)^2 + (b-y)^2 ) + d^2"),
 			dS_i__da: math.compile("-2*d*(a-x)/sqrt((a-x)^2+(b-y)^2)+2*a-2*x"),
